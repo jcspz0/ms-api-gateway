@@ -1,0 +1,163 @@
+{
+    "$schema": "https://www.krakend.io/schema/v3.json",
+    "version": 3,
+    "port": 4444,
+    "endpoints": [
+        {
+            "endpoint": "/api/users",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/users",
+                    "is_collection": true,
+                    "host": [
+                        "https://jsonplaceholder.typicode.com"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/api/posts",
+            "method": "GET",
+            "backend": [
+                {
+                    "url_pattern": "/posts",
+                    "is_collection": true,
+                    "host": [
+                        "https://jsonplaceholder.typicode.com"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/api/posts/{id}",
+            "method": "GET",
+            "timeout": "8000ms",
+            "extra_config": {
+                "proxy": {
+                    "sequential": true
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/posts/{id}",
+                    "host": [
+                        "https://jsonplaceholder.typicode.com"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/api/user-posts",
+            "method": "GET",
+            "input_query_strings":[
+                "*"
+            ],
+          
+            "extra_config": {
+                "proxy": {
+                    "sequential": true
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/users",
+                    "is_collection": true,
+                    "host": [
+                        "https://jsonplaceholder.typicode.com"
+                    ],
+                    "group": "usuarios",
+                    "extra_config": {
+                        "proxy": {
+                            "flatmap_filter": [
+                                {
+                                    "type": "del",
+                                    "args": [
+                                        "collection.*.address"
+                                    ]
+                                },
+                                {
+                                    "type": "del",
+                                    "args": [
+                                        "collection.*.company"
+                                    ]
+                                },
+                                {
+                                    "type": "del",
+                                    "args": [
+                                        "collection.*.website"
+                                    ]
+                                },
+                                {
+                                    "type": "del",
+                                    "args": [
+                                        "collection.*.phone"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "url_pattern": "/posts?userId=5",
+                    "is_collection": true,
+                    "host": [
+                        "https://jsonplaceholder.typicode.com"
+                    ],
+                    "extra_config": {
+                        "proxy": {
+                            "flatmap_filter": [
+                                {
+                                    "type": "move",
+                                    "args": [
+                                        "collection.*.address", "usuarios.collection.*.post"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "endpoint": "/api/user-posts/{user}",
+            "method": "GET",
+            "timeout": "8000ms",
+            "extra_config": {
+                "proxy": {
+                    "sequential": true
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/users/{user}",
+                    "host": [
+                        "https://jsonplaceholder.typicode.com"
+                    ],
+                    "allow": [
+                        "id",
+                        "name",
+                        "username",
+                        "email"
+                    ]
+                },
+                {
+                    "url_pattern": "/posts?userId={resp0_id}",
+                    "is_collection": true,
+                    "host": [
+                        "https://jsonplaceholder.typicode.com"
+                    ],
+                    "mapping": {
+                        "collection": "Posts"
+                      }
+                
+                }
+            ]
+        }
+    ],
+    "extra_config": {
+        "router": {
+            "return_error_msg": true
+        }
+    }
+}
