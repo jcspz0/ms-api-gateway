@@ -30,6 +30,24 @@
             ]
         },
         {
+            "endpoint": "/api/users/{id}",
+            "method": "GET",
+            "timeout": "8000ms",
+            "extra_config": {
+                "proxy": {
+                    "sequential": true
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/users/{id}",
+                    "host": [
+                        "https://jsonplaceholder.typicode.com"
+                    ]
+                }
+            ]
+        },
+        {
             "endpoint": "/api/posts/{id}",
             "method": "GET",
             "timeout": "8000ms",
